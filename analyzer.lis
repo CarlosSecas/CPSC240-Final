@@ -1,0 +1,249 @@
+     1                                  ; Name: Carlos Secas
+     2                                  ; CWID: 886088269
+     3                                  ; Class: 240-09 Section 09
+     4                                  ; Email: carlosJsecas@gmail.com
+     5                                  ; Today's date : 4/23/2025
+     6                                  ; Final Program
+     7                                  
+     8                                  global analyzer
+     9                                  extern printf
+    10                                  extern scanf
+    11                                  
+    12                                  segment .data
+    13                                  
+    14 00000000 506C6561736520656E-         prompt_msg1 db "Please enter 4 quadword integers seperated by ws. These will be pushed on the stack.", 10, 0
+    14 00000009 746572203420717561-
+    14 00000012 64776F726420696E74-
+    14 0000001B 656765727320736570-
+    14 00000024 657261746564206279-
+    14 0000002D 2077732E2054686573-
+    14 00000036 652077696C6C206265-
+    14 0000003F 20707573686564206F-
+    14 00000048 6E2074686520737461-
+    14 00000051 636B2E0A00         
+    15 00000056 5468616E6B20796F75-         thank_you_msg1 db "Thank you.  These inputs have been pushed on the stack.", 10, 0
+    15 0000005F 2E2020546865736520-
+    15 00000068 696E70757473206861-
+    15 00000071 7665206265656E2070-
+    15 0000007A 7573686564206F6E20-
+    15 00000083 74686520737461636B-
+    15 0000008C 2E0A00             
+    16 0000008F 486572652061726520-         ar_properties_msg db "Here are properties of the current AR.", 10, 0
+    16 00000098 70726F706572746965-
+    16 000000A1 73206F662074686520-
+    16 000000AA 63757272656E742041-
+    16 000000B3 522E0A00           
+    17 000000B7 546865206261636B65-         backend_msg db "The backend is located at %p and contains 0x%016lX", 10, 0
+    17 000000C0 6E64206973206C6F63-
+    17 000000C9 617465642061742025-
+    17 000000D2 7020616E6420636F6E-
+    17 000000DB 7461696E7320307825-
+    17 000000E4 3031366C580A00     
+    18 000000EB 5468652066726F6E74-         frontend_msg db "The frontend is located at  %p and contains 0x%016lX", 10, 0
+    18 000000F4 656E64206973206C6F-
+    18 000000FD 636174656420617420-
+    18 00000106 20257020616E642063-
+    18 0000010F 6F6E7461696E732030-
+    18 00000118 78253031366C580A00 
+    19 00000121 546865206E756D6265-         ar_count_msg db "The number of qwords in the current AR is %d", 10, 0
+    19 0000012A 72206F662071776F72-
+    19 00000133 647320696E20746865-
+    19 0000013C 2063757272656E7420-
+    19 00000145 41522069732025640A-
+    19 0000014E 00                 
+    20 0000014F 486572652069732061-         ar_listing_msg db "Here is a listing of the current AR:", 10, 0
+    20 00000158 206C697374696E6720-
+    20 00000161 6F6620746865206375-
+    20 0000016A 7272656E742041523A-
+    20 00000173 0A00               
+    21 00000175 0A506C656173652065-         enter_more_msg db 10, "Please enter 2 additional long integers,  These will be pushed on the stack.", 10, 0
+    21 0000017E 6E7465722032206164-
+    21 00000187 646974696F6E616C20-
+    21 00000190 6C6F6E6720696E7465-
+    21 00000199 676572732C20205468-
+    21 000001A2 6573652077696C6C20-
+    21 000001AB 626520707573686564-
+    21 000001B4 206F6E207468652073-
+    21 000001BD 7461636B2E0A00     
+    22 000001C4 5468616E6B20796F75-         thank_you_msg2 db "Thank you.  Here is an updated listing of the current AR", 10, 0
+    22 000001CD 2E2020486572652069-
+    22 000001D6 7320616E2075706461-
+    22 000001DF 746564206C69737469-
+    22 000001E8 6E67206F6620746865-
+    22 000001F1 2063757272656E7420-
+    22 000001FA 41520A00           
+    23 000001FE 0A54686520636F6E74-         return_msg db 10, "The contents of the top of stack will be returned to the main function.", 10, 0
+    23 00000207 656E7473206F662074-
+    23 00000210 686520746F70206F66-
+    23 00000219 20737461636B207769-
+    23 00000222 6C6C20626520726574-
+    23 0000022B 75726E656420746F20-
+    23 00000234 746865206D61696E20-
+    23 0000023D 66756E6374696F6E2E-
+    23 00000246 0A00               
+    24                                  
+    25 00000248 3078253031366C580A-         fmt_hex_line db "0x%016lX", 10, 0
+    25 00000251 00                 
+    26 00000252 256C6400                    fmt_scan db "%ld", 0
+    27                                  
+    28                                  segment .bss
+    29 00000000 <res 00000030>              input_buf resq 6
+    30                                  
+    31                                  
+    32                                  segment .text
+    33                                  analyzer:
+    34 00000000 55                          push rbp
+    35 00000001 4889E5                      mov rbp, rsp
+    36                                  
+    37                                      ; Prompt user
+    38 00000004 48BF-                       mov rdi, prompt_msg1
+    38 00000006 [0000000000000000] 
+    39 0000000E E8(00000000)                call printf
+    40                                  
+    41 00000013 49BC-                       mov r12, input_buf
+    41 00000015 [0000000000000000] 
+    42                                  
+    43 0000001D 4D31ED                      xor r13, r13     ; counter (0–3)
+    44                                  
+    45                                  .read_loop:
+    46                                  
+    47 00000020 48BF-                       mov rdi, fmt_scan
+    47 00000022 [5202000000000000] 
+    48 0000002A 4C89EE                      mov rsi, r13
+    49 0000002D 48C1E603                    shl rsi, 3            ; multiply index by 8
+    50 00000031 4C01E6                      add rsi, r12          ; rsi = base + offset
+    51 00000034 4831C0                      xor rax, rax         ; REQUIRED before scanf (variadic)
+    52 00000037 E8(00000000)                call scanf
+    53                                  
+    54                                  
+    55 0000003C 49FFC5                      inc r13
+    56 0000003F 4983FD04                    cmp r13, 4
+    57 00000043 7CDB                        jl .read_loop
+    58                                  
+    59                                      ; After this loop completes, insert push loop below:
+    60 00000045 4D31F6                      xor r14, r14
+    61                                  
+    62                                      .push_loop:
+    63 00000048 4B8B04F4                    mov rax, [r12 + r14*8]
+    64 0000004C 50                          push rax
+    65 0000004D 49FFC6                      inc r14
+    66 00000050 4983FE04                    cmp r14, 4
+    67 00000054 7CF2                        jl .push_loop
+    68                                  
+    69                                  
+    70                                   ;Begin AR Display
+    71 00000056 48BF-                       mov rdi, thank_you_msg1
+    71 00000058 [5600000000000000] 
+    72 00000060 E8(00000000)                call printf
+    73                                  
+    74 00000065 48BF-                       mov rdi, ar_properties_msg
+    74 00000067 [8F00000000000000] 
+    75 0000006F E8(00000000)                call printf
+    76                                  
+    77                                    ;Backend info
+    78                                  
+    79 00000074 48BF-                       mov rdi, backend_msg     ; "The backend is located at %p and contains 0x%016lX"
+    79 00000076 [B700000000000000] 
+    80 0000007E 4889E6                      mov rsi, rsp
+    81 00000081 4883C618                    add rsi, 24
+    82 00000085 488B06                      mov rax, [rsi]          ; value at backend
+    83 00000088 4889C2                      mov rdx, rax
+    84 0000008B 4831C0                      xor rax, rax
+    85 0000008E E8(00000000)                call printf
+    86                                  
+    87                                  ;Frontend info
+    88 00000093 48BF-                       mov rdi, frontend_msg    ; "The frontend is located at %p and contains 0x%016lX"
+    88 00000095 [EB00000000000000] 
+    89 0000009D 4889E6                      mov rsi, rsp             ; pointer
+    90 000000A0 488B0424                    mov rax, [rsp]           ; value at frontend
+    91 000000A4 4889C2                      mov rdx, rax
+    92 000000A7 4831C0                      xor rax, rax
+    93 000000AA E8(00000000)                call printf
+    94                                  
+    95                                   ;Print number of qwords in AR
+    96 000000AF 4889E8                      mov rax, rbp
+    97 000000B2 4829E0                      sub rax, rsp         ; (rbp - rsp)
+    98 000000B5 48C1E803                    shr rax, 3           ; divide by 8 (qwords)
+    99 000000B9 4889C6                      mov rsi, rax
+   100 000000BC 48BF-                       mov rdi, ar_count_msg
+   100 000000BE [2101000000000000] 
+   101 000000C6 4831C0                      xor rax, rax
+   102 000000C9 E8(00000000)                call printf
+   103                                  
+   104                                      ; r15 = scan pointer from rbp down to rsp
+   105 000000CE 4989EF                      mov r15, rbp
+   106 000000D1 4983EF08                    sub r15, 8
+   107                                  
+   108                                  .print_loop:
+   109 000000D5 4939E7                      cmp r15, rsp
+   110 000000D8 721B                        jb .done_printing    ; stop if r15 < rsp (we've hit the stack bottom)
+   111                                  
+   112 000000DA 498B37                      mov rsi, [r15]       ; load 8 bytes at current location
+   113 000000DD 48BF-                       mov rdi, fmt_hex_line
+   113 000000DF [4802000000000000] 
+   114 000000E7 4831C0                      xor rax, rax
+   115 000000EA E8(00000000)                call printf
+   116                                  
+   117 000000EF 4983EF08                    sub r15, 8           ; move to next lower qword
+   118 000000F3 EBE0                        jmp .print_loop
+   119                                  
+   120                                  .done_printing:
+   121                                  
+   122                                  ;Prompt for 2 more values
+   123 000000F5 48BF-                       mov rdi, enter_more_msg
+   123 000000F7 [7501000000000000] 
+   124 000000FF E8(00000000)                call printf
+   125                                  
+   126 00000104 4D31ED                      xor r13, r13      ; reuse counter
+   127                                  
+   128                                  .read_more:
+   129 00000107 48BF-                       mov rdi, fmt_scan
+   129 00000109 [5202000000000000] 
+   130 00000111 4C89EE                      mov rsi, r13
+   131 00000114 48C1E603                    shl rsi, 3
+   132 00000118 4881C6[00000000]            add rsi, input_buf
+   133 0000011F 4883C620                    add rsi, 32
+   134 00000123 4831C0                      xor rax, rax
+   135 00000126 E8(00000000)                call scanf
+   136 0000012B 49FFC5                      inc r13
+   137 0000012E 4983FD02                    cmp r13, 2
+   138 00000132 7CD3                        jl .read_more
+   139                                  
+   140                                  
+   141                                      ;Push those 2 values onto the stack
+   142 00000134 4D31F6                      xor r14, r14
+   143                                  
+   144                                  .push_more:
+   145 00000137 4A8B04F5[20000000]          mov rax, [input_buf + r14*8 + 32]
+   146 0000013F 50                          push rax
+   147 00000140 49FFC6                      inc r14
+   148 00000143 4983FE02                    cmp r14, 2
+   149 00000147 7CEE                        jl .push_more
+   150                                  
+   151                                      ;Print updated AR message
+   152 00000149 48BF-                       mov rdi, thank_you_msg2
+   152 0000014B [C401000000000000] 
+   153 00000153 E8(00000000)                call printf
+   154                                  
+   155 00000158 4989EF                      mov r15, rbp
+   156 0000015B 4983EF08                    sub r15, 8     ; skip saved rbp
+   157                                  
+   158                                  .print_updated:
+   159 0000015F 4939E7                      cmp r15, rsp
+   160 00000162 721B                        jb .done_updated
+   161                                  
+   162 00000164 498B37                      mov rsi, [r15]
+   163 00000167 48BF-                       mov rdi, fmt_hex_line
+   163 00000169 [4802000000000000] 
+   164 00000171 4831C0                      xor rax, rax
+   165 00000174 E8(00000000)                call printf
+   166                                  
+   167 00000179 4983EF08                    sub r15, 8
+   168 0000017D EBE0                        jmp .print_updated
+   169                                  
+   170                                  .done_updated:
+   171                                  
+   172 0000017F 488B0424                    mov rax, [rsp]
+   173 00000183 4883C430                    add rsp, 48
+   174 00000187 5D                          pop rbp
+   175 00000188 C3                          ret
